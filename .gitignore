@@ -1,0 +1,19 @@
+# Ejecutables y Binarios
+codecraft_compiler
+codecraft_compiler.exe
+a.out
+*.o
+
+# Archivos generados por Flex y Bison (se regeneran con make)
+lex.yy.c
+parser.tab.c
+parser.tab.h
+
+# Archivos de salida del compilador (no son código fuente)
+output.fis
+
+# Archivos del sistema y editores
+.DS_Store
+Thumbs.db
+.vscode/
+*.swp
