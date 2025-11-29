@@ -12,8 +12,8 @@ int yylex();
 
 %%
 
-"//".* { /* Ignorar comentarios */ }
-[ \t\n\r]               { /* Ignorar espacios y saltos de Windows */ }
+"//".* { }
+[ \t\n\r]               { }
 
 "item"                  { return KW_ITEM; }
 "redstone"              { return TYPE_REDSTONE; }
@@ -40,8 +40,8 @@ int yylex();
 "pressure_plate"        { return KW_PRESSURE; }
 "lever"                 { return KW_LEVER; }
 
-">="                    { return GTE; } /* NUEVO */
-"<="                    { return LTE; } /* NUEVO */
+">="                    { return GTE; } 
+"<="                    { return LTE; }
 "=="                    { return EQ; }
 "!="                    { return NEQ; }
 "<"                     { return LT; }
@@ -70,5 +70,6 @@ int yylex();
 [a-zA-Z_][a-zA-Z0-9_]* { yylval.sval = strdup(yytext); return ID; }
 
 .                       { printf("Error lexico en linea %d: Caracter '%s' no reconocido\n", yylineno, yytext); }
+
 
 %%
