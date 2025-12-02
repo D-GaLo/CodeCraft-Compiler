@@ -1,0 +1,248 @@
+// Archivo: demo_reloj_optimo.craft
+// Caracteristicas:
+// 1. Renderizado por demanda (Eficiente).
+// 2. Manecilla de minutos acortada (Radio 20).
+// 3. Latido minimo para asegurar lectura de teclas.
+
+item redstone horas = 12;
+item redstone minutos = 0;
+item redstone centro_x = 32;
+item redstone centro_y = 32;
+
+// Estados de teclas
+item redstone prev_key_a = 0;
+item redstone prev_key_s = 0;
+
+// Bandera: Inicia en 1 para el primer dibujo
+item redstone actualizar = 1;
+
+// Variable auxiliar para latido (mantiene vivo el simulador)
+item redstone latido = 0;
+
+repeater (1 == 1) {
+
+    // 1. LATIDO MINIMO (TRUCO DE ESTABILIDAD)
+    // Dibujamos un solo pixel negro en la esquina 0,0.
+    // Esto es invisible pero obliga al simulador a procesar un ciclo grafico
+    // permitiendo que las teclas se lean correctamente sin lag.
+    glowstone(0, 0, 0); 
+
+
+    // 2. DETECCION DE TECLAS (Puertos 1 y 2)
+    
+    item redstone key_a = pressure_plate(1); // Horas
+    item redstone key_s = pressure_plate(2); // Minutos
+    
+    // Detectar flanco de bajada (al soltar) para HORAS
+    comparator (prev_key_a == 1) {
+        comparator (key_a == 0) {
+            horas = horas + 1;
+            comparator (horas > 23) { horas = 0; }
+            actualizar = 1; // ¡Orden de redibujar!
+        }
+    }
+    
+    // Detectar flanco de bajada para MINUTOS (+5)
+    comparator (prev_key_s == 1) {
+        comparator (key_s == 0) {
+            minutos = minutos + 5;
+            comparator (minutos > 59) { minutos = 0; }
+            actualizar = 1; // ¡Orden de redibujar!
+        }
+    }
+    
+    prev_key_a = key_a;
+    prev_key_s = key_s;
+
+
+    // 3. RENDERIZADO PESADO (SOLO SI CAMBIO LA HORA)
+    
+    comparator (actualizar == 1) {
+        
+        // A. LIMPIAR PANTALLA
+        piston (item redstone y = 0; y < 64; y = y + 1) {
+            piston (item redstone x = 0; x < 64; x = x + 1) {
+                glowstone(x, y, 0);
+            }
+        }
+        
+        // B. MARCO CIRCULAR (Radio 28)
+        item redstone radio_circulo = 28;
+        piston (item redstone angulo = 0; angulo < 60; angulo = angulo + 1) {
+            item redstone px = 32; item redstone py = 32;
+            
+            // Logica de 4 cuadrantes
+            comparator (angulo < 15) {
+                item redstone t = angulo * 100 / 15;
+                item redstone dx = t * radio_circulo / 100;
+                item redstone dy = (100 - t) * radio_circulo / 100;
+                px = 32 + dx; py = 32 - dy;
+            }
+            comparator (angulo > 14) { comparator (angulo < 30) {
+                item redstone t = (angulo - 15) * 100 / 15;
+                item redstone dx = (100 - t) * radio_circulo / 100;
+                item redstone dy = t * radio_circulo / 100;
+                px = 32 + dx; py = 32 + dy;
+            }}
+            comparator (angulo > 29) { comparator (angulo < 45) {
+                item redstone t = (angulo - 30) * 100 / 15;
+                item redstone dx = t * radio_circulo / 100;
+                item redstone dy = (100 - t) * radio_circulo / 100;
+                px = 32 - dx; py = 32 + dy;
+            }}
+            comparator (angulo > 44) {
+                item redstone t = (angulo - 45) * 100 / 15;
+                item redstone dx = (100 - t) * radio_circulo / 100;
+                item redstone dy = t * radio_circulo / 100;
+                px = 32 - dx; py = 32 - dy;
+            }
+            glowstone(px, py, 1);
+        }
+        
+        // C. MARCAS DE HORA (SOLIDOS 3x3)
+        piston (item redstone marca = 0; marca < 12; marca = marca + 1) {
+            item redstone pos = marca * 5;
+            item redstone radio_marca = 25;
+            item redstone mx = 32; item redstone my = 32;
+            
+            comparator (pos < 15) {
+                item redstone t = pos * 100 / 15;
+                item redstone dx = t * radio_marca / 100;
+                item redstone dy = (100 - t) * radio_marca / 100;
+                mx = 32 + dx; my = 32 - dy;
+            }
+            comparator (pos > 14) { comparator (pos < 30) {
+                item redstone t = (pos - 15) * 100 / 15;
+                item redstone dx = (100 - t) * radio_marca / 100;
+                item redstone dy = t * radio_marca / 100;
+                mx = 32 + dx; my = 32 + dy;
+            }}
+            comparator (pos > 29) { comparator (pos < 45) {
+                item redstone t = (pos - 30) * 100 / 15;
+                item redstone dx = t * radio_marca / 100;
+                item redstone dy = (100 - t) * radio_marca / 100;
+                mx = 32 - dx; my = 32 + dy;
+            }}
+            comparator (pos > 44) {
+                item redstone t = (pos - 45) * 100 / 15;
+                item redstone dx = (100 - t) * radio_marca / 100;
+                item redstone dy = t * radio_marca / 100;
+                mx = 32 - dx; my = 32 - dy;
+            }
+            
+            // Dibujar cruz gruesa
+            glowstone(mx, my, 1);     
+            glowstone(mx+1, my, 1); glowstone(mx-1, my, 1);
+            glowstone(mx, my+1, 1); glowstone(mx, my-1, 1);
+        }
+        
+        // D. CALCULO DESTINOS
+        item redstone h_pos = (horas % 12) * 5; 
+        item redstone m_pos = minutos;
+
+        // Destino Hora (Radio 12)
+        item redstone radio_hora = 12;
+        item redstone hx = 32; item redstone hy = 32;
+        
+        comparator (h_pos < 15) {
+            item redstone t = h_pos * 100 / 15;
+            item redstone dx = t * radio_hora / 100;
+            item redstone dy = (100 - t) * radio_hora / 100;
+            hx = 32 + dx; hy = 32 - dy;
+        }
+        comparator (h_pos > 14) { comparator (h_pos < 30) {
+            item redstone t = (h_pos - 15) * 100 / 15;
+            item redstone dx = (100 - t) * radio_hora / 100;
+            item redstone dy = t * radio_hora / 100;
+            hx = 32 + dx; hy = 32 + dy;
+        }}
+        comparator (h_pos > 29) { comparator (h_pos < 45) {
+            item redstone t = (h_pos - 30) * 100 / 15;
+            item redstone dx = t * radio_hora / 100;
+            item redstone dy = (100 - t) * radio_hora / 100;
+            hx = 32 - dx; hy = 32 + dy;
+        }}
+        comparator (h_pos > 44) {
+            item redstone t = (h_pos - 45) * 100 / 15;
+            item redstone dx = (100 - t) * radio_hora / 100;
+            item redstone dy = t * radio_hora / 100;
+            hx = 32 - dx; hy = 32 - dy;
+        }
+
+        // Destino Minutos (Radio 20)
+        item redstone radio_minuto = 20; 
+        item redstone mx = 32; item redstone my = 32;
+        
+        comparator (m_pos < 15) {
+            item redstone t = m_pos * 100 / 15;
+            item redstone dx = t * radio_minuto / 100;
+            item redstone dy = (100 - t) * radio_minuto / 100;
+            mx = 32 + dx; my = 32 - dy;
+        }
+        comparator (m_pos > 14) { comparator (m_pos < 30) {
+            item redstone t = (m_pos - 15) * 100 / 15;
+            item redstone dx = (100 - t) * radio_minuto / 100;
+            item redstone dy = t * radio_minuto / 100;
+            mx = 32 + dx; my = 32 + dy;
+        }}
+        comparator (m_pos > 29) { comparator (m_pos < 45) {
+            item redstone t = (m_pos - 30) * 100 / 15;
+            item redstone dx = t * radio_minuto / 100;
+            item redstone dy = (100 - t) * radio_minuto / 100;
+            mx = 32 - dx; my = 32 + dy;
+        }}
+        comparator (m_pos > 44) {
+            item redstone t = (m_pos - 45) * 100 / 15;
+            item redstone dx = (100 - t) * radio_minuto / 100;
+            item redstone dy = t * radio_minuto / 100;
+            mx = 32 - dx; my = 32 - dy;
+        }
+        
+        // E. BRESENHAM (DIBUJO DE LINEAS)
+        
+        // Hora (Limite 15 pasos)
+        item redstone x0 = 32; item redstone y0 = 32;
+        item redstone x1 = hx; item redstone y1 = hy;
+        item redstone dx = x1 - x0; item redstone dy = y1 - y0;
+        comparator (dx < 0) { dx = 0 - dx; }
+        comparator (dy < 0) { dy = 0 - dy; }
+        item redstone sx = 1; comparator (x0 > x1) { sx = 0 - 1; }
+        item redstone sy = 1; comparator (y0 > y1) { sy = 0 - 1; }
+        item redstone err = dx - dy;
+        item redstone x_act = x0; item redstone y_act = y0;
+        
+        piston (item redstone p = 0; p < 15; p = p + 1) {
+            glowstone(x_act, y_act, 1);
+            comparator (x_act == x1) { comparator (y_act == y1) { p = 100; } }
+            item redstone e2 = err * 2;
+            comparator (e2 > (0 - dy)) { err = err - dy; x_act = x_act + sx; }
+            comparator (e2 < dx) { err = err + dx; y_act = y_act + sy; }
+        }
+        
+        // Minutos (Limite 22 pasos )
+        item redstone x0m = 32; item redstone y0m = 32;
+        item redstone x1m = mx; item redstone y1m = my;
+        item redstone dxm = x1m - x0m; item redstone dym = y1m - y0m;
+        comparator (dxm < 0) { dxm = 0 - dxm; }
+        comparator (dym < 0) { dym = 0 - dym; }
+        item redstone sxm = 1; comparator (x0m > x1m) { sxm = 0 - 1; }
+        item redstone sym = 1; comparator (y0m > y1m) { sym = 0 - 1; }
+        item redstone errm = dxm - dym;
+        item redstone xm_act = x0m; item redstone ym_act = y0m;
+        
+        piston (item redstone pm = 0; pm < 22; pm = pm + 1) {
+            glowstone(xm_act, ym_act, 1);
+            comparator (xm_act == x1m) { comparator (ym_act == y1m) { pm = 100; } }
+            item redstone e2m = errm * 2;
+            comparator (e2m > (0 - dym)) { errm = errm - dym; xm_act = xm_act + sxm; }
+            comparator (e2m < dxm) { errm = errm + dxm; ym_act = ym_act + sym; }
+        }
+        
+        // Centro
+        glowstone(32, 32, 1);
+        
+        // F. FINALIZAR ACTUALIZACION
+        actualizar = 0;
+        chat("Reloj Actualizado");
+    }
+}
