@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include "ast.h"
+#include "semantic.h"
 #include "codegen.h"
 
 extern FILE* yyin;
@@ -18,20 +19,26 @@ int main(int argc, char** argv) {
         return 1;
     }
 
-    // 1. Parsing (Construir AST)
     printf("1. Analizando sintaxis...\n");
-    yyparse();
+    if (yyparse() != 0) {
+        printf("Error de sintaxis. Abortando.\n");
+        return 1;
+    }
 
-    // 2. Generacion de Codigo
-    printf("2. Generando codigo para el simulador FIS-25...\n");
+    printf("2. Verificando semantica (tipos y variables)...\n");
+    if (semantic_analysis(root) != 0) {
+        printf("Compilacion fallida debido a errores semanticos.\n");
+        return 1;
+    }
+
+    printf("3. Generando codigo para el simulador...\n");
     FILE* out = fopen("output.fis", "w");
-    fprintf(out, "// Codigo para el simulador FIS-25 Generado (Arquitectura AST)\n");
+    fprintf(out, "// Codigo para usar en el simulador \n");
     generate_code(root, out);
     
-    printf("Exito Codigo guardado en output.fis\n");
+    printf("Exito! Codigo guardado en output.fis\n");
     
     fclose(yyin);
     fclose(out);
-    // free_ast(root); // Opcional: limpiar memoria
     return 0;
 }

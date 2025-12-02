@@ -1,9 +1,3 @@
-// Archivo: demo_reloj_optimo.craft
-// Caracteristicas:
-// 1. Renderizado por demanda (Eficiente).
-// 2. Manecilla de minutos acortada (Radio 20).
-// 3. Latido minimo para asegurar lectura de teclas.
-
 item redstone horas = 12;
 item redstone minutos = 0;
 item redstone centro_x = 32;
@@ -21,15 +15,6 @@ item redstone latido = 0;
 
 repeater (1 == 1) {
 
-    // 1. LATIDO MINIMO (TRUCO DE ESTABILIDAD)
-    // Dibujamos un solo pixel negro en la esquina 0,0.
-    // Esto es invisible pero obliga al simulador a procesar un ciclo grafico
-    // permitiendo que las teclas se lean correctamente sin lag.
-    glowstone(0, 0, 0); 
-
-
-    // 2. DETECCION DE TECLAS (Puertos 1 y 2)
-    
     item redstone key_a = pressure_plate(1); // Horas
     item redstone key_s = pressure_plate(2); // Minutos
     
@@ -54,19 +39,17 @@ repeater (1 == 1) {
     prev_key_a = key_a;
     prev_key_s = key_s;
 
-
-    // 3. RENDERIZADO PESADO (SOLO SI CAMBIO LA HORA)
     
     comparator (actualizar == 1) {
         
-        // A. LIMPIAR PANTALLA
+        // LIMPIAR PANTALLA
         piston (item redstone y = 0; y < 64; y = y + 1) {
             piston (item redstone x = 0; x < 64; x = x + 1) {
                 glowstone(x, y, 0);
             }
         }
         
-        // B. MARCO CIRCULAR (Radio 28)
+        // MARCO CIRCULAR (Radio 28)
         item redstone radio_circulo = 28;
         piston (item redstone angulo = 0; angulo < 60; angulo = angulo + 1) {
             item redstone px = 32; item redstone py = 32;
@@ -99,7 +82,7 @@ repeater (1 == 1) {
             glowstone(px, py, 1);
         }
         
-        // C. MARCAS DE HORA (SOLIDOS 3x3)
+        // MARCAS DE HORA
         piston (item redstone marca = 0; marca < 12; marca = marca + 1) {
             item redstone pos = marca * 5;
             item redstone radio_marca = 25;
@@ -136,7 +119,7 @@ repeater (1 == 1) {
             glowstone(mx, my+1, 1); glowstone(mx, my-1, 1);
         }
         
-        // D. CALCULO DESTINOS
+        // CALCULO DESTINOS
         item redstone h_pos = (horas % 12) * 5; 
         item redstone m_pos = minutos;
 
@@ -198,8 +181,6 @@ repeater (1 == 1) {
             mx = 32 - dx; my = 32 - dy;
         }
         
-        // E. BRESENHAM (DIBUJO DE LINEAS)
-        
         // Hora (Limite 15 pasos)
         item redstone x0 = 32; item redstone y0 = 32;
         item redstone x1 = hx; item redstone y1 = hy;
@@ -241,7 +222,7 @@ repeater (1 == 1) {
         // Centro
         glowstone(32, 32, 1);
         
-        // F. FINALIZAR ACTUALIZACION
+        // FINALIZAR ACTUALIZACION
         actualizar = 0;
         chat("Reloj Actualizado");
     }

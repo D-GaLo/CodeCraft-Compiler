@@ -34,9 +34,8 @@ sudo apt-get install gcc flex bison make
 
 El proyecto incluye un `Makefile` para automatizar el proceso de construcción.
 
-1.  **Clona o descarga** este repositorio.
-2.  Abre una terminal en la carpeta del proyecto.
-3.  Ejecuta el comando `make` para generar el compilador:
+1.  Abre una terminal en la carpeta del proyecto.
+2.  Ejecuta el comando `make` para generar el compilador:
 
 <!-- end list -->
 

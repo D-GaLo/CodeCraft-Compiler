@@ -19,7 +19,6 @@ char* get_new_label() {
     return strdup(buffer);
 }
 
-// Retorna el nombre de la variable donde quedo el resultado
 char* emit_expression(ASTNode* node, FILE* out) {
     if (!node) return "0";
     
@@ -58,7 +57,7 @@ void generate_code(ASTNode* node, FILE* out) {
         case NODE_BLOCK: {
             ASTNode* current = node;
             while (current) {
-                generate_code(current->left, out); // Ejecutar sentencia
+                generate_code(current->left, out);
                 current = current->next;
             }
             break;
@@ -102,11 +101,11 @@ void generate_code(ASTNode* node, FILE* out) {
             char* label_end = get_new_label();
             
             fprintf(out, "IFFALSE %s GOTO %s\n", cond, label_else);
-            generate_code(node->right, out); // Then block
+            generate_code(node->right, out); 
             fprintf(out, "GOTO %s\n", label_end);
             
             fprintf(out, "LABEL %s\n", label_else);
-            if (node->extra) generate_code(node->extra, out); // Else block
+            if (node->extra) generate_code(node->extra, out);
             
             fprintf(out, "LABEL %s\n", label_end);
             break;
@@ -120,7 +119,7 @@ void generate_code(ASTNode* node, FILE* out) {
             char* cond = emit_expression(node->left, out);
             fprintf(out, "IFFALSE %s GOTO %s\n", cond, label_end);
             
-            generate_code(node->right, out); // Body
+            generate_code(node->right, out); 
             fprintf(out, "GOTO %s\n", label_start);
             fprintf(out, "LABEL %s\n", label_end);
             break;
@@ -132,25 +131,20 @@ void generate_code(ASTNode* node, FILE* out) {
             char* label_inc = get_new_label();
             char* label_end = get_new_label();
 
-            // 1. Inicializacion
             generate_code(node->left, out); 
             
-            // 2. Condicion
             fprintf(out, "LABEL %s\n", label_start);
-            // El nodo extra tiene {cond, update}. Left de extra es cond.
             char* cond = emit_expression(node->extra->left, out);
             fprintf(out, "IFFALSE %s GOTO %s\n", cond, label_end);
             
             fprintf(out, "GOTO %s\n", label_body);
 
-            // 3. Incremento
             fprintf(out, "LABEL %s\n", label_inc);
-            generate_code(node->extra->right, out); // Update stmt
+            generate_code(node->extra->right, out);
             fprintf(out, "GOTO %s\n", label_start);
 
-            // 4. Cuerpo
             fprintf(out, "LABEL %s\n", label_body);
-            generate_code(node->right, out); // Body block
+            generate_code(node->right, out); 
             fprintf(out, "GOTO %s\n", label_inc);
 
             fprintf(out, "LABEL %s\n", label_end);

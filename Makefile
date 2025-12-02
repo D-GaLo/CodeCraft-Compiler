@@ -1,7 +1,7 @@
 all: compiler
 
-compiler: parser.tab.c lex.yy.c ast.c codegen.c main.c
-	gcc -o codecraft_compiler parser.tab.c lex.yy.c ast.c codegen.c main.c -lfl
+compiler: parser.tab.c lex.yy.c ast.c semantic.c codegen.c main.c
+	gcc -o codecraft_compiler parser.tab.c lex.yy.c ast.c semantic.c codegen.c main.c -lfl
 
 parser.tab.c: parser.y
 	bison -d parser.y

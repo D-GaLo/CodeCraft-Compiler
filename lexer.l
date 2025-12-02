@@ -40,7 +40,7 @@ int yylex();
 "pressure_plate"        { return KW_PRESSURE; }
 "lever"                 { return KW_LEVER; }
 
-">="                    { return GTE; } 
+">="                    { return GTE; }
 "<="                    { return LTE; }
 "=="                    { return EQ; }
 "!="                    { return NEQ; }
@@ -70,6 +70,5 @@ int yylex();
 [a-zA-Z_][a-zA-Z0-9_]* { yylval.sval = strdup(yytext); return ID; }
 
 .                       { printf("Error lexico en linea %d: Caracter '%s' no reconocido\n", yylineno, yytext); }
-
 
 %%
