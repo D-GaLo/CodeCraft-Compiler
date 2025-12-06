@@ -13,7 +13,8 @@ typedef enum {
     NODE_BLOCK,
     NODE_BIN_OP,
     NODE_LITERAL,
-    NODE_VAR_REF
+    NODE_VAR_REF,
+    NODE_INPUT
 } NodeType;
 
 typedef struct ASTNode {

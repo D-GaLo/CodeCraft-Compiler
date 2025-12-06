@@ -56,8 +56,6 @@ void enter_scope() {
     current_scope++;
 }
 
-
-
 char* get_type(ASTNode* node) {
     if (!node) return "void";
     
@@ -125,6 +123,11 @@ void check_node(ASTNode* node) {
             }
             break;
         }
+        
+        // --- CASO NUEVO: Validar que la variable del INPUT existe ---
+        case NODE_INPUT:
+            check_node(node->left); // Verifica el NODE_VAR_REF interno
+            break;
 
         case NODE_IF:
             check_node(node->left);

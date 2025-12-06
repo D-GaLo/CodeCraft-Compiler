@@ -23,11 +23,12 @@ ASTNode* root = NULL;
 %token KW_COMPARATOR KW_OBSERVER KW_HOPPER KW_REPEATER KW_PISTON
 %token KW_CHAT KW_GLOWSTONE KW_PRESSURE KW_LEVER
 %token KW_NEW_INV KW_STORE KW_SIZE
+%token KW_CHEST
 %token ASSIGN PLUS MINUS MULT DIV MOD POW
 %token EQ NEQ LT GT LTE GTE
 %token LPAREN RPAREN LBRACE RBRACE LBRACKET RBRACKET SEMICOLON COMMA
 
-%type <node> program statement_list statement block var_decl assignment assignment_nosemi print_stmt pixel_stmt if_stmt while_stmt for_stmt expression term factor input_expr
+%type <node> program statement_list statement block var_decl assignment assignment_nosemi print_stmt input_stmt pixel_stmt if_stmt while_stmt for_stmt expression term factor input_expr
 %type <sval> type
 
 %left EQ NEQ
@@ -44,7 +45,7 @@ program:
 
 statement_list:
     statement { 
-        $$ = new_node(NODE_BLOCK, $1, NULL); 
+        $$ = new_node(NODE_BLOCK, $1, NULL);
     }
     | statement_list statement {
         ASTNode* ptr = $1;
@@ -58,6 +59,7 @@ statement:
     var_decl
     | assignment
     | print_stmt
+    | input_stmt
     | pixel_stmt
     | if_stmt
     | while_stmt
@@ -96,6 +98,12 @@ print_stmt:
     }
     ;
 
+input_stmt:
+    KW_CHEST LPAREN ID RPAREN SEMICOLON {
+        $$ = new_node(NODE_INPUT, new_var_ref($3), NULL); 
+    }
+    ;
+
 pixel_stmt:
     KW_GLOWSTONE LPAREN expression COMMA expression COMMA expression RPAREN SEMICOLON {
         $$ = new_pixel($3, $5, $7);
@@ -104,10 +112,12 @@ pixel_stmt:
 
 input_expr:
      KW_LEVER LPAREN INT_LIT RPAREN { 
-         $$ = new_node(NODE_KEY, NULL, NULL); $$->value = strdup($3); 
+         $$ = new_node(NODE_KEY, NULL, NULL);
+         $$->value = strdup($3); 
      }
    | KW_PRESSURE LPAREN INT_LIT RPAREN { 
-         $$ = new_node(NODE_KEY, NULL, NULL); $$->value = strdup($3); 
+         $$ = new_node(NODE_KEY, NULL, NULL);
+         $$->value = strdup($3); 
      }
    ;
 
@@ -128,7 +138,7 @@ while_stmt:
 
 for_stmt:
     KW_PISTON LPAREN var_decl expression SEMICOLON assignment_nosemi RPAREN block {
-        ASTNode* extra_info = new_node(NODE_BLOCK, $4, $6); 
+        ASTNode* extra_info = new_node(NODE_BLOCK, $4, $6);
         $$ = new_flow_control(NODE_FOR, $3, $8, extra_info);
     }
     ;

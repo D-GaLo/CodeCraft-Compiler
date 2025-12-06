@@ -65,7 +65,7 @@ void generate_code(ASTNode* node, FILE* out) {
 
         case NODE_VAR_DECL:
             fprintf(out, "VAR %s\n", node->value);
-            if (node->left) { // Init value
+            if (node->left) { 
                 if (node->left->type == NODE_KEY) {
                     fprintf(out, "KEY %s %s\n", node->left->value, node->value);
                 } else {
@@ -78,6 +78,11 @@ void generate_code(ASTNode* node, FILE* out) {
         case NODE_ASSIGN: {
             char* res = emit_expression(node->right, out);
             fprintf(out, "ASSIGN %s %s\n", res, node->left->value);
+            break;
+        }
+        
+        case NODE_INPUT: {
+            fprintf(out, "INPUT %s\n", node->left->value);
             break;
         }
 

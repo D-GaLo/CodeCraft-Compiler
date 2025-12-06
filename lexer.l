@@ -40,6 +40,8 @@ int yylex();
 "pressure_plate"        { return KW_PRESSURE; }
 "lever"                 { return KW_LEVER; }
 
+"chest"                 { return KW_CHEST; } 
+
 ">="                    { return GTE; }
 "<="                    { return LTE; }
 "=="                    { return EQ; }
